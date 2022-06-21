@@ -5,11 +5,13 @@ import org.hamcrest.MatcherAssert.assertThat
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ReleaseHistoryServiceTest {
-    @Test fun retrievesReleaseHistory() {
+    @Test
+    fun retrievesReleaseHistory() {
         val service = ReleaseHistoryService()
 
         val actualResults = service.getVersionHistory("org.apache.maven", "apache-maven")
@@ -70,7 +72,8 @@ class ReleaseHistoryServiceTest {
         }
     }
 
-    @Test fun retrievePackageVersions() {
+    @Test
+    fun retrievePackageVersions() {
         val service = ReleaseHistoryService()
 
         val actualResults = service.getVersionsFromMetadata("org.apache.maven", "apache-maven")
@@ -128,7 +131,8 @@ class ReleaseHistoryServiceTest {
         assertEquals(expectedResults, actualResults)
     }
 
-    @Test fun buildMetadataUrlWithDefaultRepository() {
+    @Test
+    fun buildMetadataUrlWithDefaultRepository() {
         val service = ReleaseHistoryService()
 
         assertEquals(
@@ -137,7 +141,8 @@ class ReleaseHistoryServiceTest {
         )
     }
 
-    @Test fun buildMetadataUrlWithAlternativeRepository() {
+    @Test
+    fun buildMetadataUrlWithAlternativeRepository() {
         val service = ReleaseHistoryService()
 
         service.repositoryUrl = "https://repo.spring.io/artifactory/release/"
@@ -148,7 +153,8 @@ class ReleaseHistoryServiceTest {
         )
     }
 
-    @Test fun buildVersionPomUrl() {
+    @Test
+    fun buildVersionPomUrl() {
         val service = ReleaseHistoryService()
 
         assertEquals(
@@ -157,10 +163,12 @@ class ReleaseHistoryServiceTest {
         )
     }
 
-    @Test fun getVersionReleaseDate() {
+    @Test
+    fun getVersionReleaseDate() {
         val service = ReleaseHistoryService()
 
-        val expectedDateTime = ZonedDateTime.parse("Tue, 10 Feb 2009 02:57:59 GMT", DateTimeFormatter.RFC_1123_DATE_TIME)
+        val expectedDateTime =
+            ZonedDateTime.parse("Tue, 10 Feb 2009 02:57:59 GMT", DateTimeFormatter.RFC_1123_DATE_TIME)
         runBlocking {
             assertEquals(
                 expectedDateTime,
