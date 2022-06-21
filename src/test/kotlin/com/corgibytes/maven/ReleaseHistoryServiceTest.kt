@@ -128,7 +128,7 @@ class ReleaseHistoryServiceTest {
             "3.8.5",
         )
 
-        assertEquals(expectedResults, actualResults)
+        expectedResults.forEach { assertContains(actualResults, it) }
     }
 
     @Test
