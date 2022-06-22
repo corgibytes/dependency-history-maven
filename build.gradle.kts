@@ -8,20 +8,43 @@
  */
 
 group = "com.corgibytes"
-version = "0.1.0"
 
-plugins {
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    kotlin("jvm") version "1.6.21"
-    kotlin("plugin.serialization") version "1.6.21"
-
-    // Apply the java-library plugin for API and implementation separation.
-    `java-library`
+buildscript {
+    repositories {
+        mavenLocal() // for local testing of shipkit
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.shipkit:shipkit-auto-version:1.+")
+        classpath("org.shipkit:shipkit-changelog:1.+")
+        classpath("io.github.gradle-nexus:publish-plugin:1.1.0")
+    }
 }
 
 repositories {
-    // Use Maven Central for resolving dependencies.
+    mavenLocal() // for local testing of shipkit
     mavenCentral()
+}
+
+extensions.findByName("buildScan")?.withGroovyBuilder {
+    setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
+    setProperty("termsOfServiceAgree", "yes")
+}
+
+apply("gradle/release.gradle")
+apply("gradle/ide.gradle")
+
+plugins {
+    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
+    kotlin("jvm") version "1.7.0"
+    kotlin("plugin.serialization") version "1.7.0"
+
+    id("com.github.ben-manes.versions") version "0+"
+    id("se.patrikerdes.use-latest-versions") version "0+"
+
+    // Apply the java-library plugin for API and implementation separation.
+    `java-library`
 }
 
 dependencies {
@@ -33,10 +56,10 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation("com.google.guava:guava:30.1.1-jre")
+    implementation("com.google.guava:guava:31.1-jre")
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api("org.apache.commons:commons-math3:3.6.1")
@@ -48,7 +71,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-xml:$ktor_version")
     implementation("io.github.pdvrieze.xmlutil:core-jvm:0.84.2")
     implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.84.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 }
 
 testing {
@@ -67,8 +90,4 @@ tasks.jar {
             "Implementation-Title" to project.name,
             "Implementation-Version" to project.version))
     }
-}
-
-java {
-    withSourcesJar()
 }
