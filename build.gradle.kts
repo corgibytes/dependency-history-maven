@@ -8,7 +8,32 @@
  */
 
 group = "com.corgibytes"
-version = "0.1.0"
+
+buildscript {
+    repositories {
+        mavenLocal() // for local testing of shipkit
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.shipkit:shipkit-auto-version:1.+")
+        classpath("org.shipkit:shipkit-changelog:1.+")
+        classpath("io.github.gradle-nexus:publish-plugin:1.1.0")
+    }
+}
+
+repositories {
+    mavenLocal() // for local testing of shipkit
+    mavenCentral()
+}
+
+extensions.findByName("buildScan")?.withGroovyBuilder {
+    setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
+    setProperty("termsOfServiceAgree", "yes")
+}
+
+apply("gradle/release.gradle")
+apply("gradle/ide.gradle")
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
@@ -20,11 +45,6 @@ plugins {
 
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
-}
-
-repositories {
-    // Use Maven Central for resolving dependencies.
-    mavenCentral()
 }
 
 dependencies {
@@ -70,8 +90,4 @@ tasks.jar {
             "Implementation-Title" to project.name,
             "Implementation-Version" to project.version))
     }
-}
-
-java {
-    withSourcesJar()
 }

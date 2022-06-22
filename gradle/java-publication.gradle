@@ -1,0 +1,59 @@
+// Based on: https://github.com/shipkit/shipkit-demo/blob/f604dbf393f9549cc78c7c57b05dc69f9c7ab0fc/gradle/java-publication.gradle
+
+//Auxiliary jar files required by Maven module publications
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+//TODO: java.withSourcesJar(), java.withJavadocJar()
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+apply plugin: 'maven-publish'
+publishing { //https://docs.gradle.org/current/userguide/publishing_maven.html
+    publications {
+        maven(MavenPublication) { //name of the publication
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = tasks.jar.archiveBaseName
+                description = "Library for retrieving release history for a package that's published in a Maven repository"
+                url = "https://github.com/corgibytes/dependency-history-maven"
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://github.com/corgibytes/dependency-history-maven/blob/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'mscottford'
+                        name = 'M. Scott Ford'
+                        url = 'https://github.com/mscottford'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/corgibytes/dependency-history-maven.git'
+                }
+            }
+        }
+    }
+
+    repositories {
+        // useful for testing - running "publish" will create artifacts/pom in a local dir
+        maven { url = "$rootDir/build/repo" }
+    }
+}
+
+apply plugin: 'signing'
+signing { // https://docs.gradle.org/current/userguide/signing_plugin.html
+    if (System.getenv("PGP_KEY")) {
+        useInMemoryPgpKeys(System.getenv("PGP_KEY"), System.getenv("PGP_PWD"))
+        sign publishing.publications.maven
+    }
+}
