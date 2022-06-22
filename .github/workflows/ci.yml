@@ -41,7 +41,7 @@ jobs:
       - name: 4. Perform release
         # Release job, only for pushes to the main development branch
         if: github.event_name == 'push'
-          && github.ref == 'refs/heads/master'
+          && github.ref == 'refs/heads/main'
           && github.repository == 'corgibytes/dependency-history-maven'
           && !contains(toJSON(github.event.commits.*.message), '[skip release]')
 
