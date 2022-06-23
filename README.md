@@ -4,6 +4,28 @@ This project is a small library that knows how to retrieve the release history f
 
 ## Usage
 
+### Gradle
+
+```groovy
+dependencies {
+    implementation("com.corgibytes:dependency-history-maven:1.0.+")
+}
+```
+
+### Maven
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.corgibytes</groupId>
+        <artifactId>dependency-history-maven</artifactId>
+        <version>[1.0.0,)</version>
+    </dependency>
+</dependencies>
+```
+
+### Example
+
 ```kotlin
 val service = ReleaseHistoryService()
 
