@@ -177,4 +177,86 @@ class ReleaseHistoryServiceTest {
         }
     }
 
+    @Test
+    fun parseVersionsFromMetadataResponseWithOptionalFieldsMissing() {
+        // this XML document does not contain the /metadata/release element
+        val xmlDocument = """
+            <metadata>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-project</artifactId>
+                <versioning>
+                    <latest>2.2.1</latest>
+                    <versions>
+                        <version>2.0-alpha-2</version>
+                        <version>2.0-alpha-3</version>
+                        <version>2.0-beta-1</version>
+                        <version>2.0-beta-2</version>
+                        <version>2.0-beta-3</version>
+                        <version>2.0</version>
+                        <version>2.0-1</version>
+                        <version>2.0.1</version>
+                        <version>2.0.2</version>
+                        <version>2.0.3</version>
+                        <version>2.0.4</version>
+                        <version>2.0.5</version>
+                        <version>2.0.6</version>
+                        <version>2.0.7</version>
+                        <version>2.0.8</version>
+                        <version>2.0.9</version>
+                        <version>2.0.10</version>
+                        <version>2.0.11</version>
+                        <version>2.1.0-M1</version>
+                        <version>2.1.0</version>
+                        <version>2.2.0</version>
+                        <version>2.2.1</version>
+                        <version>3.0-alpha-1</version>
+                        <version>3.0-alpha-2</version>
+                    </versions>
+                    <lastUpdated>20100226050724</lastUpdated>
+                </versioning>
+            </metadata> 
+        """.trimIndent()
+
+        val service = ReleaseHistoryService()
+
+        val parsedVersions = service.parseVersionsFromMetadataResponse(xmlDocument)
+
+        val expectedResults = listOf(
+            "2.0-alpha-2",
+            "2.0-alpha-3",
+            "2.0-beta-1",
+            "2.0-beta-2",
+            "2.0-beta-3",
+            "2.0",
+            "2.0-1",
+            "2.0.1",
+            "2.0.2",
+            "2.0.3",
+            "2.0.4",
+            "2.0.5",
+            "2.0.6",
+            "2.0.7",
+            "2.0.8",
+            "2.0.9",
+            "2.0.10",
+            "2.0.11",
+            "2.1.0-M1",
+            "2.1.0",
+            "2.2.0",
+            "2.2.1",
+            "3.0-alpha-1",
+            "3.0-alpha-2",
+            "2.0.9",
+            "2.0.10",
+            "2.0.11",
+            "2.1.0-M1",
+            "2.1.0",
+            "2.2.0",
+            "2.2.1",
+        )
+
+        expectedResults.forEach { assertContains(parsedVersions, it) }
+
+    }
+
 }

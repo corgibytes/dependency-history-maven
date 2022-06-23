@@ -59,7 +59,7 @@ class ReleaseHistoryService {
         val latest: String,
         @XmlElement(true)
         @XmlSerialName("release", "", "")
-        val release: String,
+        val release: String? = null,
         @XmlElement(true)
         @XmlSerialName("versions", "", "")
         @XmlChildrenName("version", "", "")
@@ -89,8 +89,7 @@ class ReleaseHistoryService {
             responseBody = client.get(buildMetadataUrl(groupId, artifactId)).body()
         }
 
-        val metadata: Metadata = XML.decodeFromString(responseBody)
-        return metadata.versioning.versions.map { it.value }
+        return parseVersionsFromMetadataResponse(responseBody)
     }
 
     fun buildMetadataUrl(groupId: String, artifactId: String): String {
@@ -99,6 +98,11 @@ class ReleaseHistoryService {
 
     fun buildVersionPomUrl(groupId: String, artifactId: String, version: String): String {
         return "$repositoryUrl/${groupId.replace(".", "/")}/$artifactId/$version/$artifactId-$version.pom"
+    }
+
+    fun parseVersionsFromMetadataResponse(responseBody: String): List<String> {
+        val metadata: Metadata = XML.decodeFromString(responseBody)
+        return metadata.versioning.versions.map { it.value }
     }
 
 }
