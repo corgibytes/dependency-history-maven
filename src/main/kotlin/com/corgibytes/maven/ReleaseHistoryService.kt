@@ -3,13 +3,10 @@ package com.corgibytes.maven
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.xml.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.*
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -20,13 +17,7 @@ class ReleaseHistoryService {
         field = value.removeSuffix("/")
     }
 
-    private val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            xml(format = XML {
-                xmlDeclMode = XmlDeclMode.Auto
-            })
-        }
-    }
+    private val client = HttpClient(CIO);
 
     fun getVersionHistory(groupId: String, artifactId: String): Map<String, ZonedDateTime> {
         val versions = getVersionsFromMetadata(groupId, artifactId)
