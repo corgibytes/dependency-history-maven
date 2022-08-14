@@ -29,7 +29,7 @@ class ReleaseHistoryService {
             return repositoryUrl == mavenCentralUrl
         }
 
-    private val client = HttpClient(CIO);
+    private val client = HttpClient(CIO)
 
     fun getVersionHistory(groupId: String, artifactId: String): Map<String, ZonedDateTime> {
         var mode = Mode.CONFIGURED_REPOSITORY
