@@ -8,7 +8,7 @@ This project is a small library that knows how to retrieve the release history f
 
 ```groovy
 dependencies {
-    implementation("com.corgibytes:dependency-history-maven:1.0.+")
+    implementation("com.corgibytes:dependency-history-maven:2.0.+")
 }
 ```
 
@@ -19,7 +19,7 @@ dependencies {
     <dependency>
         <groupId>com.corgibytes</groupId>
         <artifactId>dependency-history-maven</artifactId>
-        <version>[1.0.0,)</version>
+        <version>[2.0.0,)</version>
     </dependency>
 </dependencies>
 ```
