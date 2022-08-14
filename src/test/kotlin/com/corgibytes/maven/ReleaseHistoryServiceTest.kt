@@ -1,13 +1,11 @@
 package com.corgibytes.maven
 
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.MatcherAssert.assertThat
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ReleaseHistoryServiceTest {
     @Test
