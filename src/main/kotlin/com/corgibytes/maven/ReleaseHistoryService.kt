@@ -90,12 +90,19 @@ class ReleaseHistoryService {
     )
 
     fun getVersionsFromMetadata(groupId: String, artifactId: String): List<String> {
+        val wasRequestSuccessful: Boolean
         val responseBody: String
         runBlocking {
-            responseBody = client.get(buildMetadataUrl(groupId, artifactId)).body()
+            val response = client.get(buildMetadataUrl(groupId, artifactId))
+            wasRequestSuccessful = response.status.value < 400
+            responseBody = response.body()
         }
 
-        return parseVersionsFromMetadataResponse(responseBody)
+        return if (wasRequestSuccessful) {
+            parseVersionsFromMetadataResponse(responseBody)
+        } else {
+            emptyList()
+        }
     }
 
     fun buildMetadataUrl(groupId: String, artifactId: String): String {
