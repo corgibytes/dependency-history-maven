@@ -312,6 +312,60 @@ class ReleaseHistoryServiceTest {
             assertEquals(expectedDateTime, actualResults.get(version), version)
         }
     }
+    
+    @Test
+    fun retrieveReleaseHistoryFallsBackToMavenCentralIfPackageNotFoundInAlternativeRepository() {
+        val service = ReleaseHistoryService()
+
+        service.repositoryUrl = "http://repo.spring.io/release"
+
+        val actualResults = service.getVersionHistory("org.apache.ant", "ant")
+
+        val expectedResults = mapOf(
+            "1.7.0" to "Fri, 22 Dec 2006 13:37:31 GMT",
+            "1.7.1" to "Wed, 09 Jul 2008 20:04:58 GMT",
+            "1.8.0" to "Tue, 02 Feb 2010 00:37:15 GMT",
+            "1.8.1" to "Fri, 30 Apr 2010 22:04:20 GMT",
+            "1.8.2" to "Mon, 27 Dec 2010 16:10:08 GMT",
+            "1.8.3" to "Sun, 26 Feb 2012 06:05:46 GMT",
+            "1.8.4" to "Tue, 22 May 2012 06:01:29 GMT",
+            "1.9.0" to "Mon, 11 Mar 2013 00:50:39 GMT",
+            "1.9.1" to "Wed, 22 May 2013 03:04:13 GMT",
+            "1.9.2" to "Mon, 08 Jul 2013 18:48:17 GMT",
+            "1.9.3" to "Mon, 23 Dec 2013 16:26:35 GMT",
+            "1.9.4" to "Wed, 30 Apr 2014 03:21:11 GMT",
+            "1.9.5" to "Sun, 31 May 2015 14:32:14 GMT",
+            "1.9.6" to "Mon, 29 Jun 2015 05:25:24 GMT",
+            "1.9.7" to "Sat, 09 Apr 2016 07:08:40 GMT",
+            "1.9.8" to "Sun, 25 Dec 2016 18:03:40 GMT",
+            "1.9.9" to "Thu, 02 Feb 2017 18:40:04 GMT",
+            "1.9.10" to "Sat, 03 Feb 2018 16:22:42 GMT",
+            "1.9.11" to "Fri, 23 Mar 2018 17:19:16 GMT",
+            "1.9.12" to "Tue, 19 Jun 2018 04:14:12 GMT",
+            "1.9.13" to "Tue, 10 Jul 2018 04:27:04 GMT",
+            "1.9.14" to "Tue, 12 Mar 2019 09:32:47 GMT",
+            "1.9.15" to "Sun, 10 May 2020 13:57:08 GMT",
+            "1.9.16" to "Sat, 10 Jul 2021 18:00:36 GMT",
+            "1.10.0" to "Tue, 27 Dec 2016 06:56:05 GMT",
+            "1.10.1" to "Thu, 02 Feb 2017 19:08:40 GMT",
+            "1.10.2" to "Sat, 03 Feb 2018 16:58:39 GMT",
+            "1.10.3" to "Sat, 24 Mar 2018 12:41:27 GMT",
+            "1.10.4" to "Tue, 19 Jun 2018 06:50:53 GMT",
+            "1.10.5" to "Tue, 10 Jul 2018 04:54:03 GMT",
+            "1.10.6" to "Thu, 02 May 2019 13:27:39 GMT",
+            "1.10.7" to "Sun, 01 Sep 2019 06:51:35 GMT",
+            "1.10.8" to "Sun, 10 May 2020 14:40:05 GMT",
+            "1.10.9" to "Sun, 27 Sep 2020 10:08:52 GMT",
+            "1.10.10" to "Mon, 12 Apr 2021 04:00:22 GMT",
+            "1.10.11" to "Sat, 10 Jul 2021 18:43:17 GMT",
+            "1.10.12" to "Wed, 13 Oct 2021 05:09:56 GMT",
+        )
+
+        expectedResults.forEach { version, rawExpectedDateTime ->
+            val expectedDateTime = ZonedDateTime.parse(rawExpectedDateTime, DateTimeFormatter.RFC_1123_DATE_TIME)
+            assertEquals(expectedDateTime, actualResults.get(version), version)
+        }
+    }
 
     @Test
     fun retrievePackageVersions() {
