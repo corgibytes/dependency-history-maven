@@ -312,7 +312,7 @@ class ReleaseHistoryServiceTest {
             assertEquals(expectedDateTime, actualResults.get(version), version)
         }
     }
-    
+
     @Test
     fun retrieveReleaseHistoryFallsBackToMavenCentralIfPackageNotFoundInAlternativeRepository() {
         val service = ReleaseHistoryService()

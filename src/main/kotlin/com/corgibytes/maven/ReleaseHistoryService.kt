@@ -11,22 +11,41 @@ import nl.adaptivity.xmlutil.serialization.*
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+enum class Mode {
+    CONFIGURED_REPOSITORY,
+    MAVEN_CENTRAL
+}
+
 class ReleaseHistoryService {
-    var repositoryUrl: String = "https://repo.maven.apache.org/maven2"
+    private val mavenCentralUrl = "https://repo.maven.apache.org/maven2"
+
+    var repositoryUrl: String = mavenCentralUrl
     set(value) {
         field = value.removeSuffix("/")
     }
 
+    val isUsingMavenCentral: Boolean
+        get() {
+            return repositoryUrl == mavenCentralUrl
+        }
+
+
     private val client = HttpClient(CIO);
 
     fun getVersionHistory(groupId: String, artifactId: String): Map<String, ZonedDateTime> {
-        val versions = getVersionsFromMetadata(groupId, artifactId)
+        var mode = Mode.CONFIGURED_REPOSITORY
+        var versions = getVersionsFromMetadata(groupId, artifactId, mode)
+
+        if (versions.isEmpty() && !isUsingMavenCentral) {
+            mode = Mode.MAVEN_CENTRAL
+            versions = getVersionsFromMetadata(groupId, artifactId, mode)
+        }
 
         val result: Map<String, ZonedDateTime>
 
         runBlocking {
             result = versions.map { version ->
-                version to async { getVersionReleaseDate(groupId, artifactId, version) }
+                version to async { getVersionReleaseDate(groupId, artifactId, version, mode) }
             }.associate { pair ->
                 pair.first to pair.second.await()
             }
@@ -35,8 +54,8 @@ class ReleaseHistoryService {
         return result
     }
 
-    suspend fun getVersionReleaseDate(groupId: String, artifactId: String, version: String): ZonedDateTime {
-        val url = buildVersionPomUrl(groupId, artifactId, version)
+    suspend fun getVersionReleaseDate(groupId: String, artifactId: String, version: String, mode: Mode = Mode.CONFIGURED_REPOSITORY): ZonedDateTime {
+        val url = buildVersionPomUrl(groupId, artifactId, version, mode)
         val response = client.head(url)
         var headerValue = response.headers["Last-Modified"]
         if (headerValue == null) {
@@ -89,11 +108,11 @@ class ReleaseHistoryService {
         val versioning: MetadataVersioning
     )
 
-    fun getVersionsFromMetadata(groupId: String, artifactId: String): List<String> {
+    fun getVersionsFromMetadata(groupId: String, artifactId: String, mode: Mode = Mode.CONFIGURED_REPOSITORY): List<String> {
         val wasRequestSuccessful: Boolean
         val responseBody: String
         runBlocking {
-            val response = client.get(buildMetadataUrl(groupId, artifactId))
+            val response = client.get(buildMetadataUrl(groupId, artifactId, mode))
             wasRequestSuccessful = response.status.value < 400
             responseBody = response.body()
         }
@@ -105,12 +124,14 @@ class ReleaseHistoryService {
         }
     }
 
-    fun buildMetadataUrl(groupId: String, artifactId: String): String {
-        return "$repositoryUrl/${groupId.replace(".", "/")}/$artifactId/maven-metadata.xml"
+    fun buildMetadataUrl(groupId: String, artifactId: String, mode: Mode = Mode.CONFIGURED_REPOSITORY): String {
+        val targetRepositoryUrl = repositoryUrlFrom(mode)
+        return "$targetRepositoryUrl/${groupId.replace(".", "/")}/$artifactId/maven-metadata.xml"
     }
 
-    fun buildVersionPomUrl(groupId: String, artifactId: String, version: String): String {
-        return "$repositoryUrl/${groupId.replace(".", "/")}/$artifactId/$version/$artifactId-$version.pom"
+    fun buildVersionPomUrl(groupId: String, artifactId: String, version: String, mode: Mode = Mode.CONFIGURED_REPOSITORY): String {
+        val targetRepositoryUrl = repositoryUrlFrom(mode)
+        return "$targetRepositoryUrl/${groupId.replace(".", "/")}/$artifactId/$version/$artifactId-$version.pom"
     }
 
     fun parseVersionsFromMetadataResponse(responseBody: String): List<String> {
@@ -118,4 +139,13 @@ class ReleaseHistoryService {
         return metadata.versioning.versions.map { it.value }
     }
 
+    private fun repositoryUrlFrom(mode: Mode) = when (mode) {
+        Mode.CONFIGURED_REPOSITORY -> {
+            repositoryUrl
+        }
+
+        Mode.MAVEN_CENTRAL -> {
+            mavenCentralUrl
+        }
+    }
 }
