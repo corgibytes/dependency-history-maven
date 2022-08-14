@@ -72,12 +72,18 @@ class ReleaseHistoryService {
     @Serializable
     @XmlSerialName("metadata", "", "")
     private data class Metadata(
+        @XmlElement(false)
+        @XmlSerialName("modelVersion", "", "")
+        val modelVersion: String? = null,
         @XmlElement(true)
         @XmlSerialName("groupId", "", "")
         val groupId: String,
         @XmlElement(true)
         @XmlSerialName("artifactId", "", "")
         val artifactId: String,
+        @XmlElement(true)
+        @XmlSerialName("version", "", "")
+        val version: String? = null,
         @XmlElement(true)
         @XmlSerialName("versioning", "", "")
         val versioning: MetadataVersioning
