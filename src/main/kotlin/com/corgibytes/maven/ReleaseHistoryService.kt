@@ -24,7 +24,7 @@ class ReleaseHistoryService {
         field = value.removeSuffix("/")
     }
 
-    val isUsingMavenCentral: Boolean
+    private val isUsingMavenCentral: Boolean
         get() {
             return repositoryUrl == mavenCentralUrl
         }
