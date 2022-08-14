@@ -15,7 +15,7 @@ class ReleaseHistoryServiceTest {
         val service = ReleaseHistoryService()
 
         val actualResults = service.getVersionHistory("org.apache.maven", "apache-maven")
-        println(actualResults["2.0.10"])
+
         val expectedResults = mapOf(
             "2.0.9" to "Thu, 10 Apr 2008 00:16:46 GMT",
             "2.0.10" to "Tue, 10 Feb 2009 02:57:59 GMT",
