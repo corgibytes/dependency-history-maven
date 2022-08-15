@@ -13,6 +13,10 @@ class ReleaseHistoryService(
         MavenRepositoryImpl(MavenRepositoryImpl.mavenCentralUrl))
 
     fun getVersionHistory(groupId: String, artifactId: String): Map<String, ZonedDateTime> {
+        if (targetRepository.isMavenCentral) {
+            return getVersionHistoryFromRepository(groupId, artifactId, targetRepository)
+        }
+
         val targetRepositoryVersions = getVersionHistoryFromRepository(groupId, artifactId, targetRepository)
         val mavenCentralRepositoryVersions =
             getVersionHistoryFromRepository(groupId, artifactId, mavenCentralRepository)
