@@ -9,6 +9,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ReleaseHistoryServiceTest {
     @Test
@@ -434,7 +435,6 @@ class ReleaseHistoryServiceTest {
 
         every { targetRepository.getVersionsFromMetadata(groupId, artifactId) } returns targetRepositoryVersions
         every { targetRepository.isMavenCentral } returns true
-        verify(exactly = 0) { mavenCentralRepository.getVersionsFromMetadata(any(), any()) }
         every { mavenCentralRepository.isMavenCentral } returns true
 
         every {
@@ -449,10 +449,6 @@ class ReleaseHistoryServiceTest {
             runBlocking { targetRepository.getVersionReleaseDate(groupId, artifactId, "3.0.0") }
         } returns ZonedDateTime.parse("2022-03-03T12:00:00Z")
 
-        verify(exactly = 0) {
-            runBlocking { mavenCentralRepository.getVersionReleaseDate(any(), any(), any()) }
-        }
-
         val expectedResults = mapOf(
             "1.0.0" to ZonedDateTime.parse("2022-01-01T12:00:00Z"),
             "2.0.0" to ZonedDateTime.parse("2020-02-02T12:00:00Z"),
@@ -464,6 +460,25 @@ class ReleaseHistoryServiceTest {
 
         assertEquals(expectedResults, actualResults)
 
+        verify(exactly = 0) { mavenCentralRepository.getVersionsFromMetadata(any(), any()) }
+        verify(exactly = 0) {
+            runBlocking { mavenCentralRepository.getVersionReleaseDate(any(), any(), any()) }
+        }
+        verify(atLeast = 1) { mavenCentralRepository.isMavenCentral }
+
         confirmVerified(mavenCentralRepository)
+    }
+
+    @Test
+    fun retrieveReleaseHistoryRequiresSecondRepositoryParameterToBeMavenCentral() {
+        val targetRepository = mockk<MavenRepository>()
+        val mavenCentralRepository = mockk<MavenRepository>()
+
+        every { targetRepository.isMavenCentral } returns false
+        every { mavenCentralRepository.isMavenCentral } returns false
+
+        assertFailsWith<Exception>("Second repository must be configured to communicate with Maven Central") {
+            ReleaseHistoryService(targetRepository, mavenCentralRepository)
+        }
     }
 }

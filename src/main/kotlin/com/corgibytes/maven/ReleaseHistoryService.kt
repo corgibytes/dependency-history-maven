@@ -8,6 +8,12 @@ class ReleaseHistoryService(
     private val targetRepository: MavenRepository,
     private val mavenCentralRepository: MavenRepository) {
 
+    init {
+        if (!mavenCentralRepository.isMavenCentral) {
+            throw Exception("Second repository must be configured to communicate with Maven Central")
+        }
+    }
+
     constructor(repositoryUrl: String = MavenRepositoryImpl.mavenCentralUrl) : this(
         MavenRepositoryImpl(repositoryUrl),
         MavenRepositoryImpl(MavenRepositoryImpl.mavenCentralUrl))
