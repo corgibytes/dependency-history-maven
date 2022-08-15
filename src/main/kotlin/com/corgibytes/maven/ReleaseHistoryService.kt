@@ -13,19 +13,34 @@ class ReleaseHistoryService(
         MavenRepositoryImpl(MavenRepositoryImpl.mavenCentralUrl))
 
     fun getVersionHistory(groupId: String, artifactId: String): Map<String, ZonedDateTime> {
-        var versions = targetRepository.getVersionsFromMetadata(groupId, artifactId)
+        val targetRepositoryVersions = getVersionHistoryFromRepository(groupId, artifactId, targetRepository)
+        val mavenCentralRepositoryVersions =
+            getVersionHistoryFromRepository(groupId, artifactId, mavenCentralRepository)
 
-        var repositoryForVersions = targetRepository
-        if (versions.isEmpty() && !targetRepository.isMavenCentral) {
-            repositoryForVersions = mavenCentralRepository
-            versions = mavenCentralRepository.getVersionsFromMetadata(groupId, artifactId)
+        val result: MutableMap<String, ZonedDateTime> = LinkedHashMap()
+        result.putAll(targetRepositoryVersions)
+        mavenCentralRepositoryVersions.forEach { entry ->
+            if (targetRepositoryVersions.containsKey(entry.key)) {
+                result.replace(entry.key, minOf(entry.value, result[entry.key]!!))
+            } else {
+                result[entry.key] = entry.value
+            }
         }
+        return result
+    }
+
+    private fun getVersionHistoryFromRepository(
+        groupId: String,
+        artifactId: String,
+        repository: MavenRepository
+    ): Map<String, ZonedDateTime> {
+        var versions = repository.getVersionsFromMetadata(groupId, artifactId)
 
         val result: Map<String, ZonedDateTime>
 
         runBlocking {
             result = versions.map { version ->
-                version to async { repositoryForVersions.getVersionReleaseDate(groupId, artifactId, version) }
+                version to async { repository.getVersionReleaseDate(groupId, artifactId, version) }
             }.associate { pair ->
                 pair.first to pair.second.await()
             }

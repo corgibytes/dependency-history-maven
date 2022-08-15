@@ -1,5 +1,8 @@
 package com.corgibytes.maven
 
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.Test
@@ -359,5 +362,57 @@ class ReleaseHistoryServiceTest {
             val expectedDateTime = ZonedDateTime.parse(rawExpectedDateTime, DateTimeFormatter.RFC_1123_DATE_TIME)
             assertEquals(expectedDateTime, actualResults.get(version), version)
         }
+    }
+
+    @Test
+    fun retrieveReleaseHistoryCombinesResultsFromTargetRepositoryAndMavenCentralRepository() {
+        val targetRepository = mockk<MavenRepository>()
+        val mavenCentralRepository = mockk<MavenRepository>()
+
+        val groupId = "org.apache.maven"
+        val artifactId = "maven"
+
+        // In this scenario, version 1.0.0 is only available from the target repository, and 4.0.0 is only available
+        // from the Maven Central repository
+        val targetRepositoryVersions = listOf("1.0.0", "2.0.0", "3.0.0")
+        val mavenCentralVersions = listOf("2.0.0", "3.0.0", "4.0.0")
+
+        every { targetRepository.getVersionsFromMetadata(groupId, artifactId) } returns targetRepositoryVersions
+        every { mavenCentralRepository.getVersionsFromMetadata(groupId, artifactId) } returns mavenCentralVersions
+
+        every {
+            runBlocking { targetRepository.getVersionReleaseDate(groupId, artifactId, "1.0.0") }
+        } returns ZonedDateTime.parse("2022-01-01T12:00:00Z")
+        // since this version has an older date than the maven central repository, it should be included in the
+        // retrieved list
+        every {
+            runBlocking { targetRepository.getVersionReleaseDate(groupId, artifactId, "2.0.0") }
+        } returns ZonedDateTime.parse("2020-02-02T12:00:00Z")
+        every {
+            runBlocking { targetRepository.getVersionReleaseDate(groupId, artifactId, "3.0.0") }
+        } returns ZonedDateTime.parse("2022-03-03T12:00:00Z")
+
+        every {
+            runBlocking { mavenCentralRepository.getVersionReleaseDate(groupId, artifactId, "2.0.0") }
+        } returns ZonedDateTime.parse("2022-02-02T12:00:00Z")
+        // since this version has an older date than the target repository, it should be included in the retrieved list
+        every {
+            runBlocking { mavenCentralRepository.getVersionReleaseDate(groupId, artifactId, "3.0.0") }
+        } returns ZonedDateTime.parse("2020-03-03T12:00:00Z")
+        every {
+            runBlocking { mavenCentralRepository.getVersionReleaseDate(groupId, artifactId, "4.0.0") }
+        } returns ZonedDateTime.parse("2022-04-04T12:00:00Z")
+
+        val expectedResults = mapOf(
+            "1.0.0" to ZonedDateTime.parse("2022-01-01T12:00:00Z"),
+            "2.0.0" to ZonedDateTime.parse("2020-02-02T12:00:00Z"),
+            "3.0.0" to ZonedDateTime.parse("2020-03-03T12:00:00Z"),
+            "4.0.0" to ZonedDateTime.parse("2022-04-04T12:00:00Z"),
+        )
+
+        val service = ReleaseHistoryService(targetRepository, mavenCentralRepository)
+        val actualResults = service.getVersionHistory(groupId, artifactId)
+
+        assertEquals(expectedResults, actualResults)
     }
 }
