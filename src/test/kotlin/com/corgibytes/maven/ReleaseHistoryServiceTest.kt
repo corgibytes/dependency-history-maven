@@ -75,6 +75,22 @@ class ReleaseHistoryServiceTest {
     }
 
     @Test
+    fun retrieveReleaseHistoryForJavaxInject() {
+        val service = ReleaseHistoryService()
+
+        val actualResults = service.getVersionHistory("javax.inject", "javax.inject")
+
+        val expectedResults = mapOf(
+            "1" to "Tue, 13 Oct 2009 23:35:00 GMT",
+        )
+
+        expectedResults.forEach { version, rawExpectedDateTime ->
+            val expectedDateTime = ZonedDateTime.parse(rawExpectedDateTime, DateTimeFormatter.RFC_1123_DATE_TIME)
+            assertEquals(expectedDateTime, actualResults.get(version))
+        }
+    }
+
+    @Test
     fun retrieveReleaseHistoryFromAlternativeLocation() {
         val service = ReleaseHistoryService("http://repo.spring.io/release")
 
