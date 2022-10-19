@@ -39,7 +39,7 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
     private data class MetadataVersioning(
         @XmlElement(true)
         @XmlSerialName("latest", "", "")
-        val latest: String,
+        val latest: String? = null,
         @XmlElement(true)
         @XmlSerialName("release", "", "")
         val release: String? = null,
