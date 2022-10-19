@@ -3,6 +3,8 @@ package com.corgibytes.maven
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.network.sockets.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
@@ -13,7 +15,16 @@ import java.time.format.DateTimeFormatter
 class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
 
     private val repositoryUrl = repositoryUrl.removeSuffix("/")
-    private val client = HttpClient(CIO)
+    private val client = HttpClient(CIO) {
+        install(HttpRequestRetry) {
+            retryOnServerErrors(maxRetries = 5)
+            retryOnExceptionIf { _, cause ->
+                cause is ConnectTimeoutException
+            }
+            // a base delay of 1.35 will put the 5th delay at about 4.5 seconds (1.35 ** 5)
+            exponentialDelay(base = 1.35)
+        }
+    }
 
     override val isMavenCentral: Boolean
         get() = repositoryUrl == mavenCentralUrl
