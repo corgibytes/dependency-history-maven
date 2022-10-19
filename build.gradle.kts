@@ -73,7 +73,7 @@ dependencies {
     implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.84.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
-    testImplementation("io.mockk:mockk:1.12.5")
+    testImplementation("io.mockk:mockk:1.13.2")
 }
 
 testing {
