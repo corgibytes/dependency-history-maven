@@ -61,7 +61,7 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
         val versions: List<MetadataVersion>,
         @XmlElement(true)
         @XmlSerialName("lastUpdated", "", "")
-        val lastUpdated: String
+        val lastUpdated: String? = null
     )
 
     @Serializable

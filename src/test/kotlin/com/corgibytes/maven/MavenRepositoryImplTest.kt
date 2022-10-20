@@ -193,4 +193,25 @@ class MavenRepositoryImplTest {
         expectedResults.forEach { assertContains(parsedVersions, it) }
 
     }
+
+    @Test
+    fun parseVersionsFromMetadataResponseWithLatestAndLastUpdatedFieldsMissing() {
+        val xmlDocument = """
+            <metadata>
+                <groupId>aopalliance</groupId>
+                <artifactId>aopalliance</artifactId>
+                <versioning>
+                    <versions>
+                        <version>1.0</version>
+                    </versions>
+                </versioning>
+            </metadata>
+        """.trimIndent()
+
+        val repository = MavenRepositoryImpl(MavenRepositoryImpl.mavenCentralUrl)
+
+        val parsedVersions = repository.parseVersionsFromMetadataResponse(xmlDocument)
+
+        assertContains(parsedVersions, "1.0")
+    }
 }
