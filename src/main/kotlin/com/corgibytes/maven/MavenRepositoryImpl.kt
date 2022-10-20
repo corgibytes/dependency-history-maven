@@ -9,6 +9,7 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.*
+import java.net.SocketException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -19,7 +20,7 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = 5)
             retryOnExceptionIf { _, cause ->
-                cause is ConnectTimeoutException
+                cause is ConnectTimeoutException || cause is SocketException
             }
             // a base delay of 1.35 will put the 5th delay at about 4.5 seconds (1.35 ** 5)
             exponentialDelay(base = 1.35)
