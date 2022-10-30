@@ -9,6 +9,7 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.*
+import org.jsoup.Jsoup
 import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
 import java.time.ZonedDateTime
@@ -97,7 +98,69 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
         return if (wasRequestSuccessful) {
             parseVersionsFromMetadataResponse(responseBody)
         } else {
+            getVersionsFromDirectoryListing(groupId, artifactId)
+        }
+    }
+
+    private fun getVersionsFromDirectoryListing(groupId: String, artifactId: String): List<String> {
+        val wasRequestSuccessful: Boolean
+        val responseBody: String
+        runBlocking {
+            val response = client.get(buildDirectoryListingUrl(groupId, artifactId))
+            wasRequestSuccessful = response.status.value < 400
+            responseBody = response.body()
+        }
+
+        return if (wasRequestSuccessful) {
+            parseVersionsFromDirectoryListingResponse(groupId, artifactId, responseBody)
+        } else {
             emptyList()
+        }
+    }
+
+    private fun parseVersionsFromDirectoryListingResponse(groupId: String, artifactId: String, responseBody: String): List<String> {
+        val document = Jsoup.parse(responseBody)
+        val links = document.select("a")
+        var results = emptyList<String>()
+        links.forEach {
+            val target = it.attr("href").removeSuffix("/")
+            if (target != "..") {
+                if (isVersionNumberFor(groupId, artifactId, target)) {
+                    results = results.plus(target)
+                }
+            }
+        }
+        return results
+    }
+
+    private fun isVersionNumberFor(groupId: String, artifactId: String, target: String): Boolean {
+        val wasRequestSuccessful: Boolean
+        val responseBody: String
+        runBlocking {
+            val response = client.get(buildDirectoryListingUrl(groupId, artifactId, target))
+            wasRequestSuccessful = response.status.value < 400
+            responseBody = response.body()
+        }
+
+        return if (wasRequestSuccessful) {
+            doesContainVersionFor(groupId, artifactId, target, responseBody)
+        } else {
+            false
+        }
+    }
+
+    private fun doesContainVersionFor(groupId: String, artifactId: String, target: String, responseBody: String): Boolean {
+        val document = Jsoup.parse(responseBody)
+        val links = document.select("a")
+        return links.map { it.attr("href").removeSuffix("/") }.contains("$artifactId-$target.pom")
+    }
+
+    fun buildDirectoryListingUrl(groupId: String, artifactId: String, target: String? = null): String {
+        val artifactListingUrl = "$repositoryUrl/${groupId.replace(".", "/")}/$artifactId"
+        return if (target == null) {
+            artifactListingUrl
+        } else {
+            "$artifactListingUrl/$target"
         }
     }
 
