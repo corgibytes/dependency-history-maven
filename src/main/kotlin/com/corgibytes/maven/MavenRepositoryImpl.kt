@@ -102,7 +102,7 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
         }
     }
 
-    fun getVersionsFromDirectoryListing(groupId: String, artifactId: String): List<String> {
+    private fun getVersionsFromDirectoryListing(groupId: String, artifactId: String): List<String> {
         val wasRequestSuccessful: Boolean
         val responseBody: String
         runBlocking {
@@ -123,7 +123,7 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
         val links = document.select("a")
         var results = emptyList<String>()
         links.forEach {
-            val target = it.attr("href")
+            val target = it.attr("href").removeSuffix("/")
             if (target != "..") {
                 if (isVersionNumberFor(groupId, artifactId, target)) {
                     results = results.plus(target)
@@ -152,7 +152,7 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
     private fun doesContainVersionFor(groupId: String, artifactId: String, target: String, responseBody: String): Boolean {
         val document = Jsoup.parse(responseBody)
         val links = document.select("a")
-        return links.map { it.attr("href") }.contains("$artifactId-$target.pom")
+        return links.map { it.attr("href").removeSuffix("/") }.contains("$artifactId-$target.pom")
     }
 
     fun buildDirectoryListingUrl(groupId: String, artifactId: String, target: String? = null): String {
