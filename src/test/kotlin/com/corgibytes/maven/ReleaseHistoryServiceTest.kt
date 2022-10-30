@@ -91,6 +91,22 @@ class ReleaseHistoryServiceTest {
     }
 
     @Test
+    fun retrieveReleaseHistoryForJcipAnnotations() {
+        val service = ReleaseHistoryService()
+
+        val actualResults = service.getVersionHistory("net.jcip", "jcip-annotations")
+
+        val expectedResults = mapOf(
+            "1.0" to "Thu, 14 Aug 2008 01:48:00 GMT",
+        )
+
+        expectedResults.forEach { version, rawExpectedDateTime ->
+            val expectedDateTime = ZonedDateTime.parse(rawExpectedDateTime, DateTimeFormatter.RFC_1123_DATE_TIME)
+            assertEquals(expectedDateTime, actualResults.get(version))
+        }
+    }
+
+    @Test
     fun retrieveReleaseHistoryFromAlternativeLocation() {
         val service = ReleaseHistoryService("http://repo.spring.io/release")
 
