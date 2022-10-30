@@ -97,7 +97,7 @@ class ReleaseHistoryServiceTest {
         val actualResults = service.getVersionHistory("net.jcip", "jcip-annotations")
 
         val expectedResults = mapOf(
-            "1.0" to "Thu, 14 Aug 2008 01:48:00 GMT",
+            "1.0" to "Thu, 14 Aug 2008 06:48:05 GMT",
         )
 
         expectedResults.forEach { version, rawExpectedDateTime ->
