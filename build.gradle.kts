@@ -71,7 +71,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-xml:$ktor_version")
     implementation("io.github.pdvrieze.xmlutil:core-jvm:0.85.0")
     implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.84.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     implementation("org.jsoup:jsoup:1.15.4")
 
     testImplementation("io.mockk:mockk:1.13.4")
