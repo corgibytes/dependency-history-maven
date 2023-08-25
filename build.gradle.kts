@@ -18,7 +18,7 @@ buildscript {
     dependencies {
         classpath("org.shipkit:shipkit-auto-version:1.+")
         classpath("org.shipkit:shipkit-changelog:1.+")
-        classpath("io.github.gradle-nexus:publish-plugin:1.1.0")
+        classpath("io.github.gradle-nexus:publish-plugin:1.3.0")
     }
 }
 
