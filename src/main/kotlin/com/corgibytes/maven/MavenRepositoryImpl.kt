@@ -3,9 +3,9 @@ package com.corgibytes.maven
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.network.sockets.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.*
@@ -35,12 +35,17 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
     override suspend fun getVersionReleaseDate(groupId: String, artifactId: String, version: String): ZonedDateTime {
         val url = buildVersionPomUrl(groupId, artifactId, version)
         val response = client.head(url)
+
+        if (response.status == HttpStatusCode.NotFound) {
+            throw PomFileNotFoundException(url)
+        }
+
         var headerValue = response.headers["Last-Modified"]
         if (headerValue == null) {
             headerValue = response.headers["last-modified"]
         }
         if (headerValue == null) {
-            throw Exception("Last-Modified header is not present for $url")
+            throw LastModifiedHeaderNotFound(url)
         }
 
         return ZonedDateTime.parse(headerValue, DateTimeFormatter.RFC_1123_DATE_TIME)
@@ -181,3 +186,4 @@ class MavenRepositoryImpl(repositoryUrl: String) : MavenRepository {
         const val mavenCentralUrl = "https://repo.maven.apache.org/maven2"
     }
 }
+

@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 
 class MavenRepositoryImplTest {
@@ -109,6 +110,17 @@ class MavenRepositoryImplTest {
                 expectedDateTime,
                 repository.getVersionReleaseDate("org.apache.maven", "apache-maven", "2.0.10")
             )
+        }
+    }
+
+    @Test
+    fun getVersionReleaseDateNotFound() {
+        val repository = MavenRepositoryImpl(MavenRepositoryImpl.mavenCentralUrl)
+
+        assertFailsWith<PomFileNotFoundException> {
+            runBlocking {
+                repository.getVersionReleaseDate("org.example", "fake-package", "2.1.3")
+            }
         }
     }
 

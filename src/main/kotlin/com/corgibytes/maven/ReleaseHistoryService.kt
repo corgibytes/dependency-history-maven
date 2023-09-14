@@ -1,7 +1,9 @@
 package com.corgibytes.maven
 
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import java.time.ZoneId
 import java.time.ZonedDateTime
 
 class ReleaseHistoryService(
@@ -44,16 +46,24 @@ class ReleaseHistoryService(
         artifactId: String,
         repository: MavenRepository
     ): Map<String, ZonedDateTime> {
-        var versions = repository.getVersionsFromMetadata(groupId, artifactId)
+        val versions = repository.getVersionsFromMetadata(groupId, artifactId)
 
         val result: Map<String, ZonedDateTime>
+        val nullDate: ZonedDateTime = ZonedDateTime.of(0, 1,1, 0, 0, 0, 0, ZoneId.systemDefault())
 
         runBlocking {
-            result = versions.map { version ->
-                version to async { repository.getVersionReleaseDate(groupId, artifactId, version) }
-            }.associate { pair ->
-                pair.first to pair.second.await()
-            }
+            result =
+                versions.map(fun(version: String): Pair<String, Deferred<ZonedDateTime>> {
+                    return version to async {
+                        try {
+                            repository.getVersionReleaseDate(groupId, artifactId, version)
+                        } catch (error: PomFileNotFoundException) {
+                            nullDate
+                        }
+                    }
+                }).
+                associate { pair -> pair.first to pair.second.await() }.
+                filterNot { it.value == nullDate }
         }
 
         return result
