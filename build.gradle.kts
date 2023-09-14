@@ -70,7 +70,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-xml:$ktor_version")
     implementation("io.github.pdvrieze.xmlutil:core-jvm:0.86.1")
-    implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.86.1")
+    implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.86.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("org.jsoup:jsoup:1.16.1")
 
