@@ -38,7 +38,7 @@ apply("gradle/ide.gradle")
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     kotlin("jvm") version "1.9.10"
-    kotlin("plugin.serialization") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.20"
 
     id("com.github.ben-manes.versions") version "0+"
     id("se.patrikerdes.use-latest-versions") version "0+"
